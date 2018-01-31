@@ -42,6 +42,23 @@ start_link(Host, Port, Database) ->
 
 start_link(Host, Port, Database, Password) ->
     start_link(Host, Port, Database, Password, 100).
+%%    case start_link(Host, Port, Database, Password, 100) of
+%%      {ok, NewState} ->
+%%      case eredis:q(NewState,["AUTH", Password]) of
+%%        {ok, <<"OK">>} ->
+%%          case eredis:q(NewState,["SELECT", Database]) of
+%%            {ok, <<"OK">>} ->
+%%              {ok, NewState};
+%%            {error, Reason} ->
+%%              {stop, Reason}
+%%          end;
+%%        {error, Reason} ->
+%%          {stop, Reason}
+%%      end;
+%%    {error, Reason} ->
+%%      {stop, Reason}
+%%    end.
+
 
 start_link(Host, Port, Database, Password, ReconnectSleep) ->
     start_link(Host, Port, Database, Password, ReconnectSleep, ?TIMEOUT).
@@ -53,9 +70,22 @@ start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout)
        is_list(Password),
        is_integer(ReconnectSleep) orelse ReconnectSleep =:= no_reconnect,
        is_integer(ConnectTimeout) ->
-
-    eredis_client:start_link(Host, Port, Database, Password,
-                             ReconnectSleep, ConnectTimeout).
+  case eredis_client:start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout) of
+    {ok, NewState} ->
+      case eredis:q(NewState,["AUTH", Password]) of
+        {ok, <<"OK">>} ->
+          case eredis:q(NewState,["SELECT", Database]) of
+            {ok, <<"OK">>} ->
+              {ok, NewState};
+            {error, Reason} ->
+              {stop, Reason}
+          end;
+        {error, Reason} ->
+          {stop, Reason}
+      end;
+    {error, Reason} ->
+      {stop, Reason}
+  end.
 
 %% @doc: Callback for starting from poolboy
 -spec start_link(server_args()) -> {ok, Pid::pid()} | {error, Reason::term()}.

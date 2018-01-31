@@ -72,8 +72,8 @@ stop(Pid) ->
 init([Host, Port, Database, Password, ReconnectSleep, ConnectTimeout]) ->
     State = #state{host = Host,
                    port = Port,
-                   database = read_database(Database),
-                   password = list_to_binary(Password),
+%%                   database = read_database(0),
+%%                   password = list_to_binary(""),
                    reconnect_sleep = ReconnectSleep,
                    connect_timeout = ConnectTimeout,
 
@@ -86,6 +86,8 @@ init([Host, Port, Database, Password, ReconnectSleep, ConnectTimeout]) ->
         {error, Reason} ->
             {stop, Reason}
     end.
+
+
 
 handle_call({request, Req}, From, State) ->
     do_request(Req, From, State);
@@ -309,17 +311,7 @@ connect(State) ->
     case gen_tcp:connect(Addr, State#state.port,
                          [AFamily | ?SOCKET_OPTS], State#state.connect_timeout) of
         {ok, Socket} ->
-            case authenticate(Socket, State#state.password) of
-                ok ->
-                    case select_database(Socket, State#state.database) of
-                        ok ->
-                            {ok, State#state{socket = Socket}};
-                        {error, Reason} ->
-                            {error, {select_error, Reason}}
-                    end;
-                {error, Reason} ->
-                    {error, {authentication_error, Reason}}
-            end;
+            {ok, State#state{socket = Socket}};
         {error, Reason} ->
             {error, {connection_error, Reason}}
     end.
