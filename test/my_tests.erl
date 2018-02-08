@@ -16,8 +16,8 @@ connect_test() ->
 %%  ?assertMatch({ok, <<"OK">>}, eredis:q(C, ["AUTH", "he_test"])),
 %%  ?assertMatch({ok, <<"OK">>}, eredis:q(C, ["SELECT", 0])),
 
-  ?assertMatch({ok, _}, eredis:q(C, ["DEL", foo2])),
+  ?assertMatch({ok, _}, eredis:q(C, ["DEL", "foo2"])),
 
-  ?assertEqual({ok, undefined}, eredis:q(C, ["GET", foo2])),
-  ?assertEqual({ok, <<"OK">>}, eredis:q(C, ["SET", foo2, hefeng])),
-  ?assertEqual({ok, <<"hefeng">>}, eredis:q(C, ["GET", foo2])).
+  ?assertEqual({ok, undefined}, eredis:q(C, ["GET", "foo2"])),
+  ?assertEqual({ok, <<"OK">>}, eredis:q(C, ["SET", "foo2", "hefeng"])),
+  ?assertEqual({ok, <<"hefeng">>}, eredis:q(C, ["GET", "foo2"])).
